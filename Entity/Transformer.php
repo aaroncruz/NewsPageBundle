@@ -336,36 +336,52 @@ class Transformer extends AbstractTransformer
             // create canonical page
             $newsCanonicalPage = $this->createPage($post, $pageCanonicalDefaultCategory, null, $post->getTitle(), Page::slugify($post->getId().' '.$post->getTitle()), $this->getPageService('post_canonical'), $post->getSetting('pageTemplateCode'));
 
-            // create container block
-            $newsCanonicalPage->addBlocks($contentContainer = $this->getBlockInteractor()->createNewContainer(array(
-                'enabled' => true,
-                'page' => $newsCanonicalPage,
-                'code' => 'content',
-            )));
-            $contentContainer->setName('The post content container');
+			$containerBlock = null;
+			if ($newsCanonicalPage) {
+				// make sure we only attach post content container once in every page
+				$containerBlock = $this->blockManager->findOneBy(array('page' => $newsCanonicalPage, 'name' => 'post_content_container'));
+			}
+			
+			if (!$containerBlock) { 
+				// create container block
+				$newsCanonicalPage->addBlocks($contentContainer = $this->getBlockInteractor()->createNewContainer(array(
+					'enabled' => true,
+					'page' => $newsCanonicalPage,
+					'code' => 'content',
+				)));
+				$contentContainer->setName('post_content_container');
 
-            try {
-                $this->getBlockManager()->save($contentContainer);
-            } catch (\Exception $e) {
-                throw $e;
-            }
+				try {
+					$this->getBlockManager()->save($contentContainer);
+				} catch (\Exception $e) {
+					throw $e;
+				}
+			}
 
+			$shareBlockName = sprintf('%s - %s', 'Shared Block', $post->getTitle());
+			
+			$sharedBlock = null;
+			if ($newsCanonicalPage) {
+				// make sure we only attach post content container once in every page
+				$sharedBlock = $this->blockManager->findOneBy(array('page' => $newsCanonicalPage, 'name' => $shareBlockName));
+			}
+			
+			if (!$sharedBlock) {
+				// create shared block
+				$contentContainer->addChildren($sharedBlock = $this->getBlockManager()->create());
+				$sharedBlock->setType('sonata.page.block.shared_block');
+				$sharedBlock->setName($shareBlockName);
+				$sharedBlock->setSetting('blockId', $postBlock->getId());
+				$sharedBlock->setPosition(1);
+				$sharedBlock->setEnabled(true);
+				$sharedBlock->setPage($newsCanonicalPage);
 
-            // create shared block
-            $contentContainer->addChildren($sharedBlock = $this->getBlockManager()->create());
-            $sharedBlock->setType('sonata.page.block.shared_block');
-            $sharedBlock->setName(sprintf('%s - %s', 'Shared Block', $post->getTitle()));
-            $sharedBlock->setSetting('blockId', $postBlock->getId());
-            $sharedBlock->setPosition(1);
-            $sharedBlock->setEnabled(true);
-            $sharedBlock->setPage($newsCanonicalPage);
-
-            try {
-                $this->getPageManager()->save($newsCanonicalPage);
-            } catch (\Exception $e) {
-                throw $e;
-            }
-
+				try {
+					$this->getPageManager()->save($newsCanonicalPage);
+				} catch (\Exception $e) {
+					throw $e;
+				}
+			}
 
             return array('page'=>$newsCanonicalPage, 'shared_block'=>$sharedBlock);
         } else {
@@ -389,6 +405,9 @@ class Transformer extends AbstractTransformer
             $page->setSite($post->getSite());
             $page->setCanonicalPage($newsCanonicalPage);
             $page->setParent($parent);
+			if ($templateCode) {
+				$page->setTemplateCode($templateCode);
+			}
 
             if ($pageType) {
                 $page->setType($pageType);
