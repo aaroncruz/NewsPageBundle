@@ -109,6 +109,7 @@ class Transformer extends AbstractTransformer
             $emBlockManager->getConnection()->rollback();
             $emPostHasPageManager->getConnection()->rollback();
             $emCategoryHasPageManager->getConnection()->rollback();
+			$this->session->getFlashBag()->add("sonata_core_warning", "Failed to create pages. Please contact your systems administrator.");
         }
     }
 

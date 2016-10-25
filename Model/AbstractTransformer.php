@@ -15,6 +15,7 @@ use Sonata\ClassificationBundle\Model\CategoryInterface;
 use Sonata\PageBundle\Model\PageManagerInterface;
 use Sonata\PageBundle\Entity\BlockInteractor;
 use Sonata\PageBundle\Model\Page;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Rz\NewsPageBundle\Model\TransformerInterface;
 
 abstract class AbstractTransformer implements  TransformerInterface
@@ -32,6 +33,7 @@ abstract class AbstractTransformer implements  TransformerInterface
     protected $postBlockService;
     protected $categoryPostListService;
     protected $pageServices;
+	protected $session;
 
 
     public function __construct(PostManagerInterface $postManager,
@@ -40,7 +42,8 @@ abstract class AbstractTransformer implements  TransformerInterface
                                 CategoryManagerInterface $categoryManager,
                                 ManagerInterface $postHasPageManager,
                                 BlockInteractor  $blockInteractor,
-                                RegistryInterface $registry)
+                                RegistryInterface $registry,
+								SessionInterface $session)
     {
         $this->postManager          = $postManager;
         $this->pageManager          = $pageManager;
@@ -49,6 +52,7 @@ abstract class AbstractTransformer implements  TransformerInterface
         $this->postHasPageManager   = $postHasPageManager;
         $this->registry             = $registry;
         $this->blockInteractor      = $blockInteractor;
+		$this->session              = $session;
     }
 
     /**
