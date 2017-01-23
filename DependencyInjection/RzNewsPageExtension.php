@@ -181,6 +181,7 @@ class RzNewsPageExtension extends Extension
                 'targetEntity' => $config['class']['post'],
                 'cascade' => array(
                     'persist',
+                    'remove'
                 ),
                 'mappedBy' => null,
                 'inversedBy' => 'postHasPage',
@@ -188,7 +189,7 @@ class RzNewsPageExtension extends Extension
                     array(
                         'name' => 'post_id',
                         'referencedColumnName' => 'id',
-                    ),
+                        'onDelete' => 'CASCADE'                    ),
                 ),
                 'orphanRemoval' => false,
             ));
@@ -197,7 +198,7 @@ class RzNewsPageExtension extends Extension
                 'fieldName' => 'page',
                 'targetEntity' => $config['class']['page'],
                 'cascade' => array(
-                    1 => 'detach',
+                    1 => 'remove',
                 ),
                 'mappedBy' => null,
                 'inversedBy' => null,
@@ -205,7 +206,7 @@ class RzNewsPageExtension extends Extension
                     array(
                         'name' => 'page_id',
                         'referencedColumnName' => 'id',
-                        'onDelete' => 'SET NULL',
+                        'onDelete' => 'CASCADE',
                     ),
                 ),
                 'orphanRemoval' => false,
